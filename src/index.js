@@ -5,7 +5,9 @@ import './index.css';
 class Square extends React.Component {
   render() {
     return (
-      <button className="square">
+      <button className="square" onClick={(elem) => {
+        console.debug("You are click one button that its value is", elem);
+      }}>
         {this.props.value}
       </button>
     );
