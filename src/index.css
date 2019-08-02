@@ -49,3 +49,10 @@ ol, ul {
   margin-left: 20px;
 }
 
+.cur-turn-player {
+  color: royalblue;
+}
+
+.next-turn-player {
+  color: palevioletred;
+}

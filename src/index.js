@@ -3,51 +3,95 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 class Square extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: null
-    };
-  }
-
   render() {
     return (
       <button className="square" onClick={() => {
-        this.setState({
-          value: "O"
-        });
+        console.debug("square(parent) received click event");
+        // noinspection JSUnresolvedFunction
+        this.props.onClick();
       }}>
-        {this.state.value}
+        {this.props.value}
       </button>
     );
   }
 }
 
 class Board extends React.Component {
-  static renderSquare(i) {
-    return <Square value={i}/>;
+  MARK_X = "X";
+  MARK_O = "O";
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      square: Array(9).fill(null)
+    };
+    this.turns = 0;
+  }
+
+  renderSquare(i) {
+    return (
+      <Square
+        value={this.state.square[i]}
+        onClick={() => {
+          console.debug("board(parent) received click event");
+          this.handleClick(i);
+        }}
+      />
+    );
+  }
+
+  get_mark_of_current_turn() {
+    let result;
+    if (this.turns % 2 === 0) {
+      result = this.MARK_X;
+    } else {
+      result = this.MARK_O;
+    }
+    this.turns += 1;
+    return result;
+  }
+
+  handleClick(i) {
+    let s = this.state.square.slice();
+    s[i] = this.get_mark_of_current_turn();
+    this.setState({
+      square: s
+    });
   }
 
   render() {
-    const status = 'Next player: X';
+    const status = (() => {
+      let cur, next;
+      if (this.turns % 2 === 0) {
+        [cur, next] = [this.MARK_X, this.MARK_O];
+      } else {
+        [cur, next] = [this.MARK_O, this.MARK_X];
+      }
+      return <div>
+        Curr: <span className="cur-turn-player">{cur}</span>
+        <br/>
+        Next: <span className="next-turn-player">{next}</span>
+      </div>;
+      // return "Current: " + cur + ", Next Player: " + next;
+    })();
 
     return (
       <div>
         <div className="status">{status}</div>
         <div className="board-row">
-          {Board.renderSquare(0)}
-          {Board.renderSquare(1)}
-          {Board.renderSquare(2)}
+          {this.renderSquare(0)}
+          {this.renderSquare(1)}
+          {this.renderSquare(2)}
         </div>
         <div className="board-row">
-          {Board.renderSquare(3)}
-          {Board.renderSquare(4)}
-          {Board.renderSquare(5)}
+          {this.renderSquare(3)}
+          {this.renderSquare(4)}
+          {this.renderSquare(5)}
         </div>
         <div className="board-row">
-          {Board.renderSquare(6)}
-          {Board.renderSquare(7)}
-          {Board.renderSquare(8)}
+          {this.renderSquare(6)}
+          {this.renderSquare(7)}
+          {this.renderSquare(8)}
         </div>
       </div>
     );
@@ -74,5 +118,8 @@ class Game extends React.Component {
 
 ReactDOM.render(
   <Game/>,
-  document.getElementById('root')
+  document.getElementById('root'),
+  () => {
+    console.debug("on page render completed.");
+  }
 );
