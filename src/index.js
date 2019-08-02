@@ -6,8 +6,8 @@ function Square(props) {
   // noinspection JSUnresolvedVariable
   return (
     /*
-     <button className="square" onClick={() => {
-     console.debug("square(parent) received click event");
+     <button className="squares" onClick={() => {
+     console.debug("squares(parent) received click event");
      props.onClick();
      }}>
      */
@@ -25,15 +25,15 @@ class Board extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      square: Array(9).fill(null)
+      squares: Array(9).fill(null),
+      turns: 0
     };
-    this.turns = 0;
   }
 
   renderSquare(i) {
     return (
       <Square
-        value={this.state.square[i]}
+        value={this.state.squares[i]}
         onClick={() => {
           console.debug("board(parent) received click event");
           this.handleClick(i);
@@ -44,37 +44,55 @@ class Board extends React.Component {
 
   get_mark_of_current_turn() {
     let result;
-    if (this.turns % 2 === 0) {
+    if (this.state.turns % 2 === 0) {
       result = this.MARK_X;
     } else {
       result = this.MARK_O;
     }
-    this.turns += 1;
+    this.setState({
+      turns: this.state.turns + 1
+    });
     return result;
   }
 
   handleClick(i) {
-    let s = this.state.square.slice();
+    let s = this.state.squares.slice();
+    // ignoring a click if
+    // 1. a Square is already filled
+    // 2. all squares are filled(nobody win)
+    // 3. someone has won the game
+    if (s[i] || this.state.turns >= this.state.squares.length || calculate_game_winner(this.state.squares)) {
+      return;
+    }
     s[i] = this.get_mark_of_current_turn();
     this.setState({
-      square: s
+      squares: s
     });
   }
 
   render() {
     const status = (() => {
-      let cur, next;
-      if (this.turns % 2 === 0) {
-        [cur, next] = [this.MARK_X, this.MARK_O];
-      } else {
-        [cur, next] = [this.MARK_O, this.MARK_X];
+      const is_all_filled = this.state.turns >= this.state.squares.length;
+      const winner = calculate_game_winner(this.state.squares);
+      if (is_all_filled) {
+        return "Game over, nobody win";
       }
-      return <div>
-        Curr: <span className="cur-turn-player">{cur}</span>
-        <br/>
-        Next: <span className="next-turn-player">{next}</span>
-      </div>;
-      // return "Current: " + cur + ", Next Player: " + next;
+      if (winner) {
+        return <div>Winner: <span className="game-winner">{winner}</span></div>;
+      } else {
+        let cur, next;
+        if (this.state.turns % 2 === 0) {
+          [cur, next] = [this.MARK_X, this.MARK_O];
+        } else {
+          [cur, next] = [this.MARK_O, this.MARK_X];
+        }
+        return <div>
+          Curr: <span className="cur-turn-player">{cur}</span>
+          <br/>
+          Next: <span className="next-turn-player">{next}</span>
+        </div>;
+        // return "Current: " + cur + ", Next Player: " + next;
+      }
     })();
 
     return (
@@ -117,6 +135,33 @@ class Game extends React.Component {
 }
 
 // ========================================
+function calculate_game_winner(squares) {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+
+  for (let i = 0, n = lines.length; i < n; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
+    }
+  }
+  // lines.forEach(function (e) {
+  //   const [a, b, c] = e;
+  //   if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+  //     return squares[a];
+  //   }
+  // });
+  return null;
+}
+
 
 ReactDOM.render(
   <Game/>,

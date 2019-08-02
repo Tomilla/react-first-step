@@ -56,3 +56,7 @@ ol, ul {
 .next-turn-player {
   color: palevioletred;
 }
+
+.game-winner {
+  color: limegreen;
+}
