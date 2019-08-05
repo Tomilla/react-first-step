@@ -32,6 +32,10 @@ ol, ul {
   width: 34px;
 }
 
+.game-end .square {
+  color: #999;
+}
+
 .square:focus {
   outline: none;
 }
